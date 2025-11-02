@@ -15,13 +15,10 @@ class convert_factory:
     def create(self, obj) -> abstract_convertor:
         """
         Создает подходящий конвертер для объекта
-
         Args:
             obj: Объект для конвертации
-
         Returns:
             abstract_convertor: Конвертер для объекта
-
         Raises:
             operation_exception: Неизвестный тип объекта
         """
@@ -29,14 +26,14 @@ class convert_factory:
         if isinstance(obj, datetime):
             return datetime_convertor()
 
-        # Для моделей используем reference_convertor
+            # Для моделей используем reference_convertor
         elif isinstance(obj, abstact_model):
             return reference_convertor()
 
-        # Для простых типов используем basic_convertor
+            # Для простых типов используем basic_convertor
         elif isinstance(obj, (str, int, float, bool)) or obj is None:
             return basic_convertor()
 
-        # Если тип не поддерживается
+            # Если тип не поддерживается
         else:
             raise operation_exception(f"Неизвестный тип объекта: {type(obj)}")
