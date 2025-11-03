@@ -1,6 +1,5 @@
 from Src.Core.abstract_convertor import abstract_convertor
 from Src.Core.abstract_model import abstact_model
-from Src.Logics.Convertors.convert_factory import convert_factory
 
 class reference_convertor(abstract_convertor):
     """
@@ -11,6 +10,8 @@ class reference_convertor(abstract_convertor):
         result = {}
 
         if isinstance(obj, abstact_model):
+            # Локальный импорт фабрики, чтобы не было цикла
+            from Src.Logics.Convertors.convert_factory import convert_factory
             factory = convert_factory()
 
             for attr_name in dir(obj):
