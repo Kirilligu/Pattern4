@@ -1,0 +1,16 @@
+{
+  "nomenclature": [
+    { "id": "a1b2c3d4-e5f6-7890-abcd-1234567890ab", "name": "рис", "unit_measurement": "u1u2u3u4-u5u6-7890-abcd-abcdef123456" },
+    { "id": "b2c3d4e5-f6a7-8901-bcde-2345678901bc", "name": "оливковое масло", "unit_measurement": "u1u2u3u4-u5u6-7890-abcd-abcdef123456" }
+  ],
+  "storage": [
+    { "id": "s1s2s3s4-s5s6-7890-abcd-1234abcd5678", "name": "Центральный склад", "address": "ул. Главная, 123" }
+  ],
+  "transaction": [
+    { "id": "t1", "nomenclature": "a1b2c3d4-e5f6-7890-abcd-1234567890ab", "quantity": 200, "storage": "s1s2s3s4-s5s6-7890-abcd-1234abcd5678", "unit": "u1u2u3u4-u5u6-7890-abcd-abcdef123456" },
+    { "id": "t2", "nomenclature": "b2c3d4e5-f6a7-8901-bcde-2345678901bc", "quantity": 70, "storage": "s1s2s3s4-s5s6-7890-abcd-1234abcd5678", "unit": "u1u2u3u4-u5u6-7890-abcd-abcdef123456" }
+  ],
+  "unit_measure": [
+    { "id": "u1u2u3u4-u5u6-7890-abcd-abcdef123456", "name": "кг", "coefficient": 1 }
+  ]
+}

@@ -1,5 +1,5 @@
 from Src.Core.abstract_response import abstract_response
-from Src.Logics.response_csv import response_scv
+from Src.Logics.response_csv import response_csv
 from Src.Logics.response_markdown import response_markdown
 from Src.Logics.response_json import response_json
 from Src.Logics.response_xml import response_xml
@@ -9,7 +9,7 @@ from Src.settings_manager import settings_manager
 
 class factory_entities:
     __match = {
-        "csv": response_scv,
+        "csv": response_csv,
         "markdown": response_markdown,
         "json": response_json,
         "xml": response_xml

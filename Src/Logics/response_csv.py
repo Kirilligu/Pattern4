@@ -2,7 +2,7 @@ from Src.Core.abstract_response import abstract_response
 from Src.Core.common import common
 
 
-class response_scv(abstract_response):
+class response_csv(abstract_response):
 
     # Сформировать CSV
     def create(self, format:str, data: list):
@@ -16,5 +16,5 @@ class response_scv(abstract_response):
 
         # Данные
 
-        return text    
+        return text
 
