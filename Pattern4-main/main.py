@@ -1,92 +1,54 @@
-import connexion
-from flask import request, jsonify
-from Src.start_service import start_service
-from Src.reposity import reposity
-from Src.Logics.factory_entities import factory_entities
-from Src.Logics.Convertors.convert_factory import convert_factory
+from flask import Flask, request, jsonify
+from Src.start_service import StartService
+from Src.Logics.report import Report
+from Src.data_manager import DataManager
+import datetime
+import json
+import os
 
-app = connexion.FlaskApp(__name__)
-data_service = start_service()
-data_service.start()
-response_factory = factory_entities()
-convert_factory_instance = convert_factory()
+app = Flask(__name__)
+settings_file = "settings.json"
+if os.path.exists(settings_file):
+    with open(settings_file, "r", encoding="utf-8") as f:
+        settings = json.load(f)
+else:
+    settings = {"first_start": True}
+service = StartService()
+if settings.get("first_start", True):
+    service.start()  # формируем стартовые данные
+    settings["first_start"] = False  # выключаем первый старт
+    with open(settings_file, "w", encoding="utf-8") as f:
+        json.dump(settings, f, ensure_ascii=False, indent=4)
+else:
+    service.start()
 
+report_service = Report(service.data)
+data_manager = DataManager()
+@app.route("/api/report_osv", methods=["GET"])
+def get_report():
+    start_date_str = request.args.get("start_date")
+    end_date_str = request.args.get("end_date")
+    storage_id = request.args.get("storage_id") or list(service.data["storages"].keys())[0]
+    start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+    end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+    result = report_service.generateReport(storage_id, start_date, end_date)
+    return jsonify(result)
 
-@app.route("/api/accessibility", methods=['GET'])
-def check_accessibility():
-    """
-    Проверить доступность REST API
-    """
-    return "Good job"
+#сохранения данных в файл
+@app.route("/api/save", methods=["POST"])
+def save_data():
+    success = data_manager.save_data_to_file(service.data)
+    return jsonify({"success": success})
 
-
-@app.route("/api/data/<entity_type>", methods=['GET'])
-def get_entity_data(entity_type):
-    # Получение формата
-    response_format = request.args.get('format', 'csv').lower()
-    entity_to_key_mapping = {
-        "nomenclature": reposity.nomenclature_key(),
-        "range": reposity.range_key(),
-        "receipt": reposity.receipt_key(),
-        "group": reposity.group_key()
+#получения справочников
+@app.route("/api/reference", methods=["GET"])
+def get_references():
+    references = {
+        "nomenclature": list(service.data["nomenclature"].values()),
+        "storages": [vars(s) for s in service.data["storages"].values()],
+        "unit_measure": list(service.data["unit_measure"].values())
     }
-    if entity_type not in entity_to_key_mapping:
-        return jsonify({"error": "Неизвестный тип сущности"}), 404
-    entity_data = data_service.data[entity_to_key_mapping[entity_type]]
+    return jsonify(references)
 
-    try:
-        format_handler = response_factory.create(response_format)
-        formatted_response = format_handler.build(response_format, entity_data)
-        return formatted_response, 200
-    except Exception as error:
-        return jsonify({"error": str(error)}), 500
-
-
-@app.route("/api/receipts", methods=['GET'])
-def get_receipts():
-    """
-    Получить список всех рецептов
-    """
-    try:
-        # Получаем все рецепты
-        receipts = data_service.data[reposity.receipt_key()]
-
-        # Конвертируем в JSON используя фабрику конвертеров
-        result = []
-        for receipt in receipts:
-            receipt_dict = convert_factory_instance.convert(receipt)
-            result.append(receipt_dict)
-
-        return jsonify(result), 200
-
-    except Exception as error:
-        return jsonify({"error": str(error)}), 500
-
-
-@app.route("/api/receipts/<receipt_id>", methods=['GET'])
-def get_receipt(receipt_id):
-    """
-    Получить конкретный рецепт по ID
-    """
-    try:
-        # Получаем все рецепты
-        receipts = data_service.data[reposity.receipt_key()]
-
-        # Ищем рецепт с нужным ID
-        found_receipt = None
-        for receipt in receipts:
-            if receipt.unique_code == receipt_id:
-                found_receipt = receipt
-                break
-        if found_receipt is None:
-            return jsonify({"error": "Рецепт не найден"}), 404
-
-        # Конвертируем в JSON используя фабрику конвертеров
-        receipt_dict = convert_factory_instance.convert(found_receipt)
-        return jsonify(receipt_dict), 200
-
-    except Exception as error:
-        return jsonify({"error": str(error)}), 500
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
